@@ -1,11 +1,18 @@
 # 🚀 Node ECS App
+# 🚀 Node ECS App
 
+A simple **Node.js + Express** application with two routes (`/` and `/health`) that can be run **locally**, inside **Docker**, and deployed to **AWS ECS (Fargate)**.  
+This is perfect for testing **ECS container deployments** with **Application Load Balancer (ALB) health checks**.
 A simple **Node.js + Express** application with two routes (`/` and `/health`) that can be run **locally**, inside **Docker**, and deployed to **AWS ECS (Fargate)**.  
 This is perfect for testing **ECS container deployments** with **Application Load Balancer (ALB) health checks**.
 
 ---
 
 ## 📌 Features
+- **Home Route (`/`)** → Returns a welcome message.
+- **Health Check Route (`/health`)** → Returns `UP` for health monitoring.
+- **Dockerized** → Ready to run inside a container.
+- **ECS Ready** → Works with AWS ECS Fargate + ALB health checks.
 - **Home Route (`/`)** → Returns a welcome message.
 - **Health Check Route (`/health`)** → Returns `UP` for health monitoring.
 - **Dockerized** → Ready to run inside a container.
@@ -25,6 +32,9 @@ node-ecs-app/
 
 ---
 
+## ⚙️ Local Development
+
+### 1️⃣ Clone the repository
 ## ⚙️ Local Development
 
 ### 1️⃣ Clone the repository
@@ -79,6 +89,8 @@ aws ecr get-login-password --region <region> | docker login --username AWS --pas
 
 # Tag image for ECR
 docker tag node-ecs-app:latest <AWS_ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/node-ecs-app:latest
+
+# Push image
 
 # Push image
 docker push <AWS_ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/node-ecs-app:latest
