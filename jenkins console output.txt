@@ -1,0 +1,316 @@
+Started by user admin
+Obtained Jenkinsfile from git https://github.com/harsh2595/node-ecs-app.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/node-ecs-deploy
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] echo
+📥 Checking out source code from GitHub...
+[Pipeline] git
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/node-ecs-deploy/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/harsh2595/node-ecs-app.git # timeout=10
+Fetching upstream changes from https://github.com/harsh2595/node-ecs-app.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.34.1'
+ > git fetch --tags --force --progress -- https://github.com/harsh2595/node-ecs-app.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 722756f1d005ee209b3b0e3cf7e05afa4e4c8237 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 722756f1d005ee209b3b0e3cf7e05afa4e4c8237 # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git branch -D main # timeout=10
+ > git checkout -b main 722756f1d005ee209b3b0e3cf7e05afa4e4c8237 # timeout=10
+Commit message: "added jenkinsfile"
+ > git rev-list --no-walk 722756f1d005ee209b3b0e3cf7e05afa4e4c8237 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Login to ECR)
+[Pipeline] echo
+🔑 Logging in to Amazon ECR...
+[Pipeline] withAWS
+Constructing AWS CredentialsSetting AWS region us-east-1 
+ [Pipeline] {
+[Pipeline] sh
++ aws ecr get-login-password --region us-east-1
++ docker login --username AWS --password-stdin 503561437388.dkr.ecr.us-east-1.amazonaws.com/node-ecs-app
+
+WARNING! Your credentials are stored unencrypted in '/var/lib/jenkins/.docker/config.json'.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/go/credential-store/
+
+Login Succeeded
+[Pipeline] }
+[Pipeline] // withAWS
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Docker Image)
+[Pipeline] echo
+🐳 Building Docker image...
+[Pipeline] sh
++ docker build -t 503561437388.dkr.ecr.us-east-1.amazonaws.com/node-ecs-app:latest .
+failed to fetch metadata: fork/exec /usr/local/lib/docker/cli-plugins/docker-buildx: no such file or directory
+
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  129.5kB
+Step 1/7 : FROM node:18
+ ---> b50082bc3670
+Step 2/7 : WORKDIR /app
+ ---> Using cache
+ ---> b97fc825bafe
+Step 3/7 : COPY package*.json ./
+ ---> Using cache
+ ---> ca54894610bf
+Step 4/7 : RUN npm install
+ ---> Using cache
+ ---> 58901db00440
+Step 5/7 : COPY . .
+ ---> 6a3ff0594b18
+Step 6/7 : EXPOSE 3000
+ ---> Running in 895dc5c8410c
+ ---> Removed intermediate container 895dc5c8410c
+ ---> 41edba59f444
+Step 7/7 : CMD ["npm", "start"]
+ ---> Running in 56e66a88b08b
+ ---> Removed intermediate container 56e66a88b08b
+ ---> d226c451fc1f
+Successfully built d226c451fc1f
+Successfully tagged 503561437388.dkr.ecr.us-east-1.amazonaws.com/node-ecs-app:latest
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Push to ECR)
+[Pipeline] echo
+📤 Pushing image to Amazon ECR...
+[Pipeline] sh
++ docker push 503561437388.dkr.ecr.us-east-1.amazonaws.com/node-ecs-app:latest
+The push refers to repository [503561437388.dkr.ecr.us-east-1.amazonaws.com/node-ecs-app]
+1d0e3a2f23e0: Preparing
+06e6cb3033d6: Preparing
+b67b4c2e0062: Preparing
+23694d15b00c: Preparing
+d2a991bcab4d: Preparing
+b624aa2d5ea2: Preparing
+d399c9dc306f: Preparing
+b624aa2d5ea2: Waiting
+84f9fa179c1b: Preparing
+ce84ba212e49: Preparing
+d399c9dc306f: Waiting
+84f9fa179c1b: Waiting
+e4dc8cd9ecc8: Preparing
+ce84ba212e49: Waiting
+e4dc8cd9ecc8: Waiting
+6428cc293366: Preparing
+2f7436e79a0b: Preparing
+6428cc293366: Waiting
+2f7436e79a0b: Waiting
+23694d15b00c: Layer already exists
+06e6cb3033d6: Layer already exists
+d2a991bcab4d: Layer already exists
+b67b4c2e0062: Layer already exists
+b624aa2d5ea2: Layer already exists
+d399c9dc306f: Layer already exists
+84f9fa179c1b: Layer already exists
+6428cc293366: Layer already exists
+2f7436e79a0b: Layer already exists
+ce84ba212e49: Layer already exists
+e4dc8cd9ecc8: Layer already exists
+1d0e3a2f23e0: Pushed
+latest: digest: sha256:493d690ac37c08e5ccb82263af7007c9f4540b9127c313d2280dfd7e5a82dcc1 size: 2838
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy to ECS)
+[Pipeline] echo
+🚀 Deploying new version to ECS...
+[Pipeline] withAWS
+Constructing AWS CredentialsSetting AWS region us-east-1 
+ [Pipeline] {
+[Pipeline] sh
++ aws ecs update-service --cluster my-ecs-cluster --service node-ecs-service --force-new-deployment --region us-east-1
+{
+    "service": {
+        "serviceArn": "arn:aws:ecs:us-east-1:503561437388:service/my-ecs-cluster/node-ecs-service",
+        "serviceName": "node-ecs-service",
+        "clusterArn": "arn:aws:ecs:us-east-1:503561437388:cluster/my-ecs-cluster",
+        "loadBalancers": [
+            {
+                "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:503561437388:targetgroup/hk-tg1/1f568fb92fe9c31b",
+                "containerName": "node-ecs",
+                "containerPort": 3000
+            }
+        ],
+        "serviceRegistries": [],
+        "status": "ACTIVE",
+        "desiredCount": 1,
+        "runningCount": 1,
+        "pendingCount": 0,
+        "capacityProviderStrategy": [
+            {
+                "capacityProvider": "FARGATE",
+                "weight": 1,
+                "base": 0
+            }
+        ],
+        "platformVersion": "LATEST",
+        "platformFamily": "Linux",
+        "taskDefinition": "arn:aws:ecs:us-east-1:503561437388:task-definition/node-ecs-task:7",
+        "deploymentConfiguration": {
+            "deploymentCircuitBreaker": {
+                "enable": true,
+                "rollback": true
+            },
+            "maximumPercent": 200,
+            "minimumHealthyPercent": 100
+        },
+        "deployments": [
+            {
+                "id": "ecs-svc/8178148736826018072",
+                "status": "PRIMARY",
+                "taskDefinition": "arn:aws:ecs:us-east-1:503561437388:task-definition/node-ecs-task:7",
+                "desiredCount": 0,
+                "pendingCount": 0,
+                "runningCount": 0,
+                "failedTasks": 0,
+                "createdAt": 1754129941.916,
+                "updatedAt": 1754129941.916,
+                "capacityProviderStrategy": [
+                    {
+                        "capacityProvider": "FARGATE",
+                        "weight": 1,
+                        "base": 0
+                    }
+                ],
+                "platformVersion": "1.4.0",
+                "platformFamily": "Linux",
+                "networkConfiguration": {
+                    "awsvpcConfiguration": {
+                        "subnets": [
+                            "subnet-049708ea63f645c0c",
+                            "subnet-0aa06dac6913a4dc7",
+                            "subnet-021c7631bb310ac7f",
+                            "subnet-0e3ac814397ffc8d0",
+                            "subnet-051d92b123dbd49c1",
+                            "subnet-0d4cc3680927b220b"
+                        ],
+                        "securityGroups": [
+                            "sg-0151616fdd1b26a4a"
+                        ],
+                        "assignPublicIp": "ENABLED"
+                    }
+                },
+                "rolloutState": "IN_PROGRESS",
+                "rolloutStateReason": "ECS deployment ecs-svc/8178148736826018072 in progress."
+            },
+            {
+                "id": "ecs-svc/8080143944442423107",
+                "status": "ACTIVE",
+                "taskDefinition": "arn:aws:ecs:us-east-1:503561437388:task-definition/node-ecs-task:7",
+                "desiredCount": 1,
+                "pendingCount": 0,
+                "runningCount": 1,
+                "failedTasks": 0,
+                "createdAt": 1754128571.01,
+                "updatedAt": 1754128627.361,
+                "capacityProviderStrategy": [
+                    {
+                        "capacityProvider": "FARGATE",
+                        "weight": 1,
+                        "base": 0
+                    }
+                ],
+                "platformVersion": "1.4.0",
+                "platformFamily": "Linux",
+                "networkConfiguration": {
+                    "awsvpcConfiguration": {
+                        "subnets": [
+                            "subnet-049708ea63f645c0c",
+                            "subnet-0aa06dac6913a4dc7",
+                            "subnet-021c7631bb310ac7f",
+                            "subnet-0e3ac814397ffc8d0",
+                            "subnet-051d92b123dbd49c1",
+                            "subnet-0d4cc3680927b220b"
+                        ],
+                        "securityGroups": [
+                            "sg-0151616fdd1b26a4a"
+                        ],
+                        "assignPublicIp": "ENABLED"
+                    }
+                },
+                "rolloutState": "COMPLETED",
+                "rolloutStateReason": "ECS deployment ecs-svc/8080143944442423107 completed."
+            }
+        ],
+        "roleArn": "arn:aws:iam::503561437388:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+        "events": [
+            {
+                "id": "bf04ed8a-4232-455c-bd04-009d589781f9",
+                "createdAt": 1754128627.369,
+                "message": "(service node-ecs-service) has reached a steady state."
+            },
+            {
+                "id": "60299df4-2630-4f15-84d2-ded8082c9cf2",
+                "createdAt": 1754128627.368,
+                "message": "(service node-ecs-service) (deployment ecs-svc/8080143944442423107) deployment completed."
+            },
+            {
+                "id": "b81dca67-8ca7-4b9c-b21b-f71139af9591",
+                "createdAt": 1754128618.502,
+                "message": "(service node-ecs-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:503561437388:targetgroup/hk-tg1/1f568fb92fe9c31b)"
+            },
+            {
+                "id": "de0e6a5f-424f-4c6a-aa29-0efcf3031be5",
+                "createdAt": 1754128586.894,
+                "message": "(service node-ecs-service) has started 1 tasks: (task 7f734ab55b8e49e29486203edeb87f7c)."
+            }
+        ],
+        "createdAt": 1754128571.01,
+        "placementConstraints": [],
+        "placementStrategy": [],
+        "networkConfiguration": {
+            "awsvpcConfiguration": {
+                "subnets": [
+                    "subnet-049708ea63f645c0c",
+                    "subnet-0aa06dac6913a4dc7",
+                    "subnet-021c7631bb310ac7f",
+                    "subnet-0e3ac814397ffc8d0",
+                    "subnet-051d92b123dbd49c1",
+                    "subnet-0d4cc3680927b220b"
+                ],
+                "securityGroups": [
+                    "sg-0151616fdd1b26a4a"
+                ],
+                "assignPublicIp": "ENABLED"
+            }
+        },
+        "healthCheckGracePeriodSeconds": 0,
+        "schedulingStrategy": "REPLICA",
+        "deploymentController": {
+            "type": "ECS"
+        },
+        "createdBy": "arn:aws:iam::503561437388:root",
+        "enableECSManagedTags": true,
+        "propagateTags": "NONE",
+        "enableExecuteCommand": false
+    }
+}
+[Pipeline] }
+[Pipeline] // withAWS
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] echo
+✅ Deployment completed successfully! ECS service 'node-ecs-service' in cluster 'my-ecs-cluster' is now running the latest image.
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

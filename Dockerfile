@@ -1,20 +1,32 @@
-# Use Node.js LTS version
-FROM node:18
+# ----------- Build Stage -----------
+FROM node:18 AS builder
 
-# Set working directory inside container
+# Set working directory
 WORKDIR /app
 
-# Copy only package.json & package-lock.json first (to cache deps layer)
+# Copy package.json and package-lock.json (if available)
 COPY package*.json ./
 
-# Install dependencies
+# Install all dependencies
 RUN npm install
 
-# Copy the rest of the source code
+# Copy application source code
 COPY . .
 
-# Expose app port
+# ----------- Production Stage -----------
+FROM node:18-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy everything from builder stage
+COPY --from=builder /app /app
+
+# Install only production dependencies
+RUN npm prune --production
+
+# Expose port (match app.js PORT)
 EXPOSE 3000
 
-# Command to run app
+# Start the app
 CMD ["npm", "start"]
