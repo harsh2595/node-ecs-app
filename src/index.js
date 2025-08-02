@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 
 // Root route
 app.get("/", (req, res) => {
-  res.json({ message: "Hello from ECS! 🚀" });
+  res.json({ message: "Hello from ECS! 234 🚀" });
 });
 
 // Health check route
@@ -15,6 +15,6 @@ app.get("/health", (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
